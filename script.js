@@ -31,7 +31,6 @@
 
   function addToHistory(entry) {
     const history = loadHistory();
-    // avoid duplicate consecutive entries
     if (history.length && history[0].input === entry.input && history[0].answer === entry.answer) {
       return;
     }
@@ -411,6 +410,5 @@
     clearHistoryBtn.addEventListener('click', clearHistory);
   }
 
-  // Initial render of history
   renderHistory();
 })();
