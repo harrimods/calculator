@@ -3,15 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Solver Pro · SOHCAHTOA · Powers · Steps</title>
+  <title>Math Solver Pro · HarriMods</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-theme="minimal-white">
   <div class="solver-card">
-    <h1>
-      🧮 Math Solver Pro
-      <span>v3</span>
-    </h1>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark">∑</div>
+        <div class="brand-text">
+          <h1>Math Solver Pro</h1>
+          <p class="brand-credit">by <strong>HarriMods</strong> <span class="credit-tag">junior cld dev</span></p>
+        </div>
+      </div>
+
+      <div class="theme-selector" id="themeSelector">
+        <button class="theme-trigger" id="themeTrigger" aria-haspopup="true" aria-expanded="false">
+          <span class="theme-trigger-icon">◐</span>
+          <span class="theme-trigger-label" id="themeLabel">Minimal White</span>
+          <span class="theme-trigger-caret">▾</span>
+        </button>
+
+        <div class="theme-menu" id="themeMenu" role="menu">
+          <div class="theme-menu-header">Appearance</div>
+
+          <div class="theme-group">
+            <div class="theme-group-label">Light</div>
+            <button class="theme-option" data-theme="minimal-white" role="menuitem">
+              <span class="theme-swatch swatch-mw"></span>
+              <span class="theme-option-text">
+                <span class="theme-option-name">Minimal White</span>
+                <span class="theme-option-desc">Clean, borderless, distraction-free</span>
+              </span>
+              <span class="theme-check">✓</span>
+            </button>
+            <button class="theme-option" data-theme="stylish-white" role="menuitem">
+              <span class="theme-swatch swatch-sw"></span>
+              <span class="theme-option-text">
+                <span class="theme-option-name">Stylish White</span>
+                <span class="theme-option-desc">Animated, polished, expressive</span>
+              </span>
+              <span class="theme-check">✓</span>
+            </button>
+          </div>
+
+          <div class="theme-group">
+            <div class="theme-group-label">Dark</div>
+            <button class="theme-option" data-theme="minimal-black" role="menuitem">
+              <span class="theme-swatch swatch-mb"></span>
+              <span class="theme-option-text">
+                <span class="theme-option-name">Minimal Black</span>
+                <span class="theme-option-desc">Pure dark, flat and focused</span>
+              </span>
+              <span class="theme-check">✓</span>
+            </button>
+            <button class="theme-option" data-theme="stylish-black" role="menuitem">
+              <span class="theme-swatch swatch-sb"></span>
+              <span class="theme-option-text">
+                <span class="theme-option-name">Stylish Black</span>
+                <span class="theme-option-desc">Neon-accented, animated dark mode</span>
+              </span>
+              <span class="theme-check">✓</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
     <div class="subhead">
       Arithmetic · Linear · Quadratic · Powers · SOHCAHTOA · Step-by-step
     </div>
@@ -20,9 +78,9 @@
       <div class="input-group">
         <input type="text" id="mathInput" placeholder="e.g. 12+8*3  |  2x+5=15  |  x^2-4x+3=0  |  sin(30)  |  2^10" autofocus>
       </div>
-      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+      <div class="action-row">
         <button class="solve-btn" id="solveBtn">
-          <span>⚡</span> Solve & Explain
+          <span class="solve-icon">⚡</span> Solve &amp; Explain
         </button>
         <div class="examples">
           <button class="example-btn" data-ex="12 + 8 * 3 - 6 / 2">12+8*3-6/2</button>
@@ -37,7 +95,7 @@
 
     <div class="result-panel" id="resultPanel">
       <div class="result-label">
-        <span>📌 RESULT & EXPLANATION</span>
+        <span>📌 Result &amp; Explanation</span>
         <span class="badge" id="detectionBadge">waiting</span>
       </div>
       <div class="result-content" id="resultContent">
@@ -47,18 +105,18 @@
 
     <div class="history-panel">
       <div class="history-header">
-        <span>🕘 History (saved as JSON)</span>
+        <span>🕘 History</span>
         <button class="clear-history-btn" id="clearHistoryBtn">Clear</button>
       </div>
       <div class="history-list" id="historyList"></div>
     </div>
 
-    <div class="footnote">
+    <footer class="footnote">
       <span>+ − × ÷ ^ ( )</span>
       <span>sin cos tan (degrees)</span>
-      <span>linear & quadratic</span>
+      <span>linear &amp; quadratic</span>
       <span>step-by-step</span>
-    </div>
+    </footer>
   </div>
 
   <script src="script.js"></script>
