@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Solver Pro · SOHCAHTOA · Powers · Steps</title>
+  <!-- Link to external CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="solver-card">
+    <h1>
+      🧮 Math Solver Pro
+      <span>v3</span>
+    </h1>
+    <div class="subhead">
+      Arithmetic · Linear · Quadratic · Powers · SOHCAHTOA · Step-by-step
+    </div>
+
+    <div class="input-area">
+      <div class="input-group">
+        <input type="text" id="mathInput" placeholder="e.g. 12+8*3  |  2x+5=15  |  x^2-4x+3=0  |  sin(30)  |  2^10" autofocus>
+      </div>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+        <button class="solve-btn" id="solveBtn">
+          <span>⚡</span> Solve & Explain
+        </button>
+        <div class="examples">
+          <button class="example-btn" data-ex="12 + 8 * 3 - 6 / 2">12+8*3-6/2</button>
+          <button class="example-btn" data-ex="2x + 7 = 19">2x+7=19</button>
+          <button class="example-btn" data-ex="x^2 - 5x + 6 = 0">x²-5x+6=0</button>
+          <button class="example-btn" data-ex="2^10">2^10</button>
+          <button class="example-btn" data-ex="sin(30) + cos(60)">sin(30)+cos(60)</button>
+          <button class="example-btn" data-ex="3(x-2)=12">3(x-2)=12</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-label">
+        <span>📌 RESULT & EXPLANATION</span>
+        <span class="badge" id="detectionBadge">waiting</span>
+      </div>
+      <div class="result-content" id="resultContent">
+        Enter an expression or equation…
+      </div>
+    </div>
+    <div class="footnote">
+      <span>+ − × ÷ ^ ( )</span>
+      <span>sin cos tan (degrees)</span>
+      <span>linear & quadratic</span>
+      <span>step-by-step</span>
+    </div>
+  </div>
+
+  <!-- Link to external JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
