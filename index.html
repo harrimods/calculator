@@ -2,28 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Math Solver Pro · HarriMods</title>
 
-  <!-- Inline critical reset + base so nothing is ever unstyled -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { -webkit-text-size-adjust: 100%; }
     body {
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      padding: 1.25rem;
+      padding: 1rem;
+      padding-top: max(1rem, env(safe-area-inset-top));
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
       background: #fafafa;
       color: #18181b;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
     button { font-family: inherit; cursor: pointer; }
+    img, svg { max-width: 100%; display: block; }
   </style>
 
-  <!-- Main stylesheet (includes all four themes) -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="minimal-white">
@@ -96,7 +101,7 @@
 
     <div class="input-area">
       <div class="input-group">
-        <input type="text" id="mathInput" placeholder="e.g. 12+8*3  |  2x+5=15  |  x^2-4x+3=0  |  sin(30)  |  2^10" autofocus>
+        <input type="text" id="mathInput" placeholder="e.g. 12+8*3  |  2x+5=15  |  x^2-4x+3=0  |  sin(30)  |  2^10" autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text">
       </div>
       <div class="action-row">
         <button class="solve-btn" id="solveBtn">
