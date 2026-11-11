@@ -6,10 +6,77 @@
   const historyList = document.getElementById('historyList');
   const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
+  const themeSelector = document.getElementById('themeSelector');
+  const themeTrigger = document.getElementById('themeTrigger');
+  const themeLabel = document.getElementById('themeLabel');
+  const themeMenu = document.getElementById('themeMenu');
+  const themeOptions = document.querySelectorAll('.theme-option');
+
   const HISTORY_KEY = 'mathSolverHistory';
+  const THEME_KEY = 'mathSolverTheme';
   const MAX_HISTORY = 20;
 
-  // ---------- HISTORY (JSON in localStorage) ----------
+  const THEME_NAMES = {
+    'minimal-white': 'Minimal White',
+    'stylish-white': 'Stylish White',
+    'minimal-black': 'Minimal Black',
+    'stylish-black': 'Stylish Black'
+  };
+
+  // ---------- THEME ----------
+  function applyTheme(name) {
+    if (!THEME_NAMES[name]) name = 'minimal-white';
+    document.body.setAttribute('data-theme', name);
+    themeLabel.textContent = THEME_NAMES[name];
+    themeOptions.forEach(opt => {
+      opt.classList.toggle('active', opt.dataset.theme === name);
+    });
+    try {
+      localStorage.setItem(THEME_KEY, name);
+    } catch (e) { /* ignore */ }
+  }
+
+  function loadTheme() {
+    let stored = null;
+    try { stored = localStorage.getItem(THEME_KEY); } catch (e) { /* ignore */ }
+    applyTheme(stored && THEME_NAMES[stored] ? stored : 'minimal-white');
+  }
+
+  function openThemeMenu() {
+    themeSelector.classList.add('open');
+    themeTrigger.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeThemeMenu() {
+    themeSelector.classList.remove('open');
+    themeTrigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleThemeMenu(e) {
+    if (e) e.stopPropagation();
+    if (themeSelector.classList.contains('open')) closeThemeMenu();
+    else openThemeMenu();
+  }
+
+  themeTrigger.addEventListener('click', toggleThemeMenu);
+
+  themeOptions.forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      applyTheme(opt.dataset.theme);
+      closeThemeMenu();
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!themeSelector.contains(e.target)) closeThemeMenu();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeThemeMenu();
+  });
+
+  // ---------- HISTORY ----------
   function loadHistory() {
     try {
       const raw = localStorage.getItem(HISTORY_KEY);
@@ -24,9 +91,7 @@
   function saveHistory(history) {
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-    } catch (e) {
-      // storage full or unavailable — fail silently
-    }
+    } catch (e) { /* ignore */ }
   }
 
   function addToHistory(entry) {
@@ -80,7 +145,7 @@
     renderHistory();
   }
 
-  // ---------- helper: clean & normalize input ----------
+  // ---------- INPUT NORMALIZATION ----------
   function normalizeInput(raw) {
     let s = raw.trim();
     if (!s) return '';
@@ -91,7 +156,7 @@
     return s;
   }
 
-  // ---------- SAFE EVALUATION of arithmetic ----------
+  // ---------- ARITHMETIC EVALUATION ----------
   function evaluateArithmetic(expr, allowTrig = true) {
     let s = expr;
 
@@ -150,7 +215,7 @@
     }
   }
 
-  // ---------- EVALUATION with variable x ----------
+  // ---------- EVALUATION WITH VARIABLE x ----------
   function evalWithX(expr, xVal) {
     let s = expr.replace(/\^/g, '**');
     s = s.replace(/(\d)(x)/g, '$1*$2');
@@ -197,7 +262,7 @@
     }
   }
 
-  // ---------- solve polynomial equation using sampling ----------
+  // ---------- POLYNOMIAL SOLVER ----------
   function solvePolynomialEquation(lhs, rhs) {
     const f = (x) => {
       let leftVal, rightVal;
@@ -289,7 +354,7 @@
     }
   }
 
-  // ---------- Main solve ----------
+  // ---------- MAIN SOLVE ----------
   function solve() {
     let rawInput = inputEl.value.trim();
     if (!rawInput) {
@@ -410,5 +475,7 @@
     clearHistoryBtn.addEventListener('click', clearHistory);
   }
 
+  // ---------- INIT ----------
+  loadTheme();
   renderHistory();
 })();
