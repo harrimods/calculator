@@ -1,12 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Solver Pro · SOHCAHTOA · Powers · Steps</title>
-  <!-- Link to external CSS -->
-  <link rel="stylesheet" href="style.css">
-</head>
 <body>
   <div class="solver-card">
     <h1>
@@ -45,6 +36,16 @@
         Enter an expression or equation…
       </div>
     </div>
+
+    <!-- History panel -->
+    <div class="history-panel">
+      <div class="history-header">
+        <span>🕘 History (saved as JSON)</span>
+        <button class="clear-history-btn" id="clearHistoryBtn">Clear</button>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+
     <div class="footnote">
       <span>+ − × ÷ ^ ( )</span>
       <span>sin cos tan (degrees)</span>
@@ -53,7 +54,5 @@
     </div>
   </div>
 
-  <!-- Link to external JavaScript -->
   <script src="script.js"></script>
 </body>
-</html>
