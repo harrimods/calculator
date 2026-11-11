@@ -230,6 +230,113 @@ h1 span {
   padding: 0.2rem 0.8rem;
   border-radius: 100px;
 }
+
+/* ---------- HISTORY PANEL ---------- */
+.history-panel {
+  margin-top: 1.5rem;
+  background: #fffffffa;
+  backdrop-filter: blur(8px);
+  border-radius: 1.5rem;
+  padding: 1rem 1.2rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 32px -12px rgba(0, 20, 40, 0.2), inset 0 1px 0 #ffffff;
+}
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: #2563eb;
+  margin-bottom: 0.8rem;
+}
+.clear-history-btn {
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  padding: 0.3rem 0.9rem;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: 'Inter', system-ui, sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.clear-history-btn:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+.history-list::-webkit-scrollbar {
+  width: 6px;
+}
+.history-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 100px;
+}
+.history-empty {
+  font-size: 0.85rem;
+  color: #6e849c;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-style: italic;
+  padding: 0.4rem 0.2rem;
+}
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  text-align: left;
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: #1e293b;
+  overflow: hidden;
+}
+.history-item:hover {
+  background: white;
+  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  transform: translateX(2px);
+}
+.history-input {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #334155;
+}
+.history-answer {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: #2563eb;
+  background: #e0e7ff;
+  padding: 0.15rem 0.65rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
 @media (max-width: 580px) {
   .solver-card { padding: 1.4rem 1.2rem 1.8rem; }
   h1 { font-size: 1.5rem; }
