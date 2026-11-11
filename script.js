@@ -3,6 +3,83 @@
   const solveBtn = document.getElementById('solveBtn');
   const resultContent = document.getElementById('resultContent');
   const detectionBadge = document.getElementById('detectionBadge');
+  const historyList = document.getElementById('historyList');
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+  const HISTORY_KEY = 'mathSolverHistory';
+  const MAX_HISTORY = 20;
+
+  // ---------- HISTORY (JSON in localStorage) ----------
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveHistory(history) {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      // storage full or unavailable — fail silently
+    }
+  }
+
+  function addToHistory(entry) {
+    const history = loadHistory();
+    // avoid duplicate consecutive entries
+    if (history.length && history[0].input === entry.input && history[0].answer === entry.answer) {
+      return;
+    }
+    history.unshift(entry);
+    if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+    saveHistory(history);
+    renderHistory();
+  }
+
+  function renderHistory() {
+    if (!historyList) return;
+    const history = loadHistory();
+    if (!history.length) {
+      historyList.innerHTML = '<div class="history-empty">No history yet.</div>';
+      return;
+    }
+    historyList.innerHTML = history.map((h, i) => `
+      <button class="history-item" data-index="${i}" title="Click to reload">
+        <span class="history-input">${escapeHtml(h.input)}</span>
+        <span class="history-answer">${escapeHtml(h.answer)}</span>
+      </button>
+    `).join('');
+
+    historyList.querySelectorAll('.history-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        const hist = loadHistory();
+        if (hist[idx]) {
+          inputEl.value = hist[idx].input;
+          solve();
+        }
+      });
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function clearHistory() {
+    saveHistory([]);
+    renderHistory();
+  }
 
   // ---------- helper: clean & normalize input ----------
   function normalizeInput(raw) {
@@ -15,21 +92,11 @@
     return s;
   }
 
-  // ---------- SAFE EVALUATION of arithmetic (no variables, but includes trig & powers) ----------
+  // ---------- SAFE EVALUATION of arithmetic ----------
   function evaluateArithmetic(expr, allowTrig = true) {
-    // Only allow digits, operators, parentheses, dot, and trig function names
-    // We'll replace trig functions with Math equivalents after converting degrees to radians
     let s = expr;
 
-    // Handle trig functions: sin, cos, tan — input in DEGREES
-    // We'll replace sin(30) with Math.sin(30 * Math.PI/180) but must be careful with nested parentheses.
-    // Strategy: recursively replace innermost sin(...) with evaluated number (degree -> rad)
-    // But easier: use a regex to replace simple patterns like sin(30) or sin(30.5) or sin(x) won't happen here
-    // For general expressions with trig, we'll parse step by step.
-
-    // If no trig functions, just evaluate directly after replacing ^ with **
     if (!/(sin|cos|tan)\s*\(/i.test(s)) {
-      // validate characters
       if (!/^[0-9+\-*/().^]+$/.test(s)) throw new Error('Invalid characters in arithmetic expression');
       let jsExpr = s.replace(/\^/g, '**');
       if (/[a-zA-Z]/.test(jsExpr)) throw new Error('Variables not allowed');
@@ -43,47 +110,36 @@
       }
     }
 
-    // Has trig: recursively evaluate innermost trig calls
-    // Find sin(...), cos(...), tan(...) with matching parentheses
-    // We'll loop until no trig calls remain
     let maxIter = 50;
     while (/(sin|cos|tan)\s*\(/i.test(s) && maxIter-- > 0) {
       const match = s.match(/(sin|cos|tan)\s*\(([^()]*)\)/i);
-      if (!match) break; // no simple innermost match, try deeper? We'll handle nested by finding innermost
+      if (!match) break;
       const fullMatch = match[0];
       const func = match[1].toLowerCase();
       const argStr = match[2];
 
-      // evaluate argument as arithmetic (may contain ^, *, etc.)
       let argVal;
       try {
-        argVal = evaluateArithmetic(argStr, false); // no trig inside argument (or could be, but we'll allow recursion)
+        argVal = evaluateArithmetic(argStr, false);
       } catch (e) {
-        // if argument evaluation fails, try to evaluate with trig? but we are in the trig replacement, so argument should be pure numeric
         throw new Error('Invalid argument for ' + func + '()');
       }
 
-      // convert degrees to radians
       const rad = argVal * Math.PI / 180;
       let result;
       if (func === 'sin') result = Math.sin(rad);
       else if (func === 'cos') result = Math.cos(rad);
       else if (func === 'tan') {
-        // check for undefined (cos near 0)
         const cosVal = Math.cos(rad);
         if (Math.abs(cosVal) < 1e-12) throw new Error('tan undefined (angle is 90° or 270° etc.)');
         result = Math.tan(rad);
       }
-      // replace the matched part with the numeric result (formatted to avoid long decimals)
       const replacement = result.toFixed(12).replace(/\.?0+$/, '') || '0';
       s = s.replace(fullMatch, replacement);
     }
 
-    // After trig replacement, evaluate remaining expression
     if (/(sin|cos|tan)/i.test(s)) throw new Error('Could not resolve trig functions (nested too deep?)');
-    // replace ^ with **
     let jsExpr = s.replace(/\^/g, '**');
-    // validate
     if (!/^[0-9+\-*/().* ]+$/.test(jsExpr)) throw new Error('Invalid characters after trig substitution');
     try {
       const fn = new Function('return (' + jsExpr + ');');
@@ -95,21 +151,16 @@
     }
   }
 
-  // ---------- EVALUATION with variable x (supports trig & powers) ----------
+  // ---------- EVALUATION with variable x ----------
   function evalWithX(expr, xVal) {
     let s = expr.replace(/\^/g, '**');
-    // insert multiplication for implicit multiplication
     s = s.replace(/(\d)(x)/g, '$1*$2');
     s = s.replace(/(x)\(/g, '$1*(');
     s = s.replace(/\)(x)/g, ')*$1');
     s = s.replace(/\)\(/g, ')*(');
     s = s.replace(/(\d)\(/g, '$1*(');
-    // handle trig: replace sin, cos, tan with Math equivalents (degrees)
-    // We'll do a recursive replacement of simple trig with numeric arguments after substituting x.
-    // But we can also do direct substitution of x first.
     s = s.replace(/x/g, '(' + xVal + ')');
 
-    // Now handle trig functions in the substituted string
     let maxIter = 30;
     while (/(sin|cos|tan)\s*\(/i.test(s) && maxIter-- > 0) {
       const match = s.match(/(sin|cos|tan)\s*\(([^()]*)\)/i);
@@ -119,8 +170,6 @@
       const argStr = match[2];
       let argVal;
       try {
-        // evaluate argument (should be numeric now, but might contain expressions like 2*30)
-        // use evaluateArithmetic but without trig (to avoid recursion issues)
         argVal = evaluateArithmetic(argStr, false);
       } catch (e) {
         throw new Error('Invalid trig argument');
@@ -138,8 +187,6 @@
     }
 
     if (/(sin|cos|tan)/i.test(s)) throw new Error('Could not resolve trig in expression');
-
-    // Final evaluation
     if (!/^[0-9+\-*/().* ]+$/.test(s)) throw new Error('Invalid characters in expression after substitution');
     try {
       const fn = new Function('return (' + s + ');');
@@ -182,7 +229,6 @@
       sumxy += x*y;
       sumx2y += x*x*y;
     }
-    const sumx = 0;
     const det = sumx4 * n - sumx2 * sumx2;
     let a=0, b=0, c=0;
     if (Math.abs(det) < 1e-12) {
@@ -205,7 +251,6 @@
     if (Math.abs(b) < eps) b = 0;
     if (Math.abs(c) < eps) c = 0;
 
-    // Build step explanation
     let steps = [];
     steps.push(`Equation: ${lhs} = ${rhs}`);
     steps.push(`Bring all terms to one side: f(x) = (${lhs}) - (${rhs}) = 0`);
@@ -272,7 +317,6 @@
 
         const hasVar = /x/.test(lhs) || /x/.test(rhs);
         if (!hasVar) {
-          // arithmetic equation
           const leftVal = evaluateArithmetic(lhs);
           const rightVal = evaluateArithmetic(rhs);
           const equal = Math.abs(leftVal - rightVal) < 1e-9;
@@ -282,13 +326,10 @@
             <span class="answer-line">${equal ? 'True' : 'False'}</span>
             <div class="steps">${steps}</div>
           `;
+          addToHistory({ input: rawInput, answer: equal ? 'True' : 'False', type: 'arithmetic', timestamp: Date.now() });
           return;
         }
 
-        // algebraic equation
-        if (!/^[0-9x+\-*/().^=sinco ta]+$/.test(input)) { // relaxed check for trig letters
-          // more permissive: allow sin cos tan
-        }
         const solution = solvePolynomialEquation(lhs, rhs);
         detectionBadge.textContent = solution.type;
 
@@ -311,8 +352,9 @@
         const stepsHtml = solution.steps ? `<div class="steps">${solution.steps.join('\n')}</div>` : '';
         resultContent.innerHTML = `<span class="answer-line">${answerLine}</span>${stepsHtml}`;
 
+        addToHistory({ input: rawInput, answer: answerLine, type: solution.type, timestamp: Date.now() });
+
       } else {
-        // no equals sign -> arithmetic (may include trig & powers)
         if (/[a-zA-Z]/.test(input) && !/(sin|cos|tan)/i.test(input)) {
           throw new Error('Variables require an equation (e.g., 2x+3=7)');
         }
@@ -320,12 +362,9 @@
         const rounded = Math.round(val * 1e12) / 1e12;
         detectionBadge.textContent = 'arithmetic';
 
-        // Build explanation steps
         let steps = [];
-        // Check if trig present
         if (/(sin|cos|tan)\s*\(/i.test(input)) {
           steps.push(`Trigonometric expression detected. Angles are in degrees.`);
-          // Show evaluation of trig parts
           const trigMatches = input.match(/(sin|cos|tan)\s*\([^()]*\)/gi);
           if (trigMatches) {
             trigMatches.forEach(t => {
@@ -336,7 +375,6 @@
             });
           }
         }
-        // Show power evaluation if present
         if (/\^/.test(input)) {
           steps.push(`Powers are evaluated first (order of operations).`);
         }
@@ -345,6 +383,8 @@
           <span class="answer-line">${rounded}</span>
           <div class="steps">${steps.join('\n')}</div>
         `;
+
+        addToHistory({ input: rawInput, answer: String(rounded), type: 'arithmetic', timestamp: Date.now() });
       }
     } catch (err) {
       detectionBadge.textContent = 'error';
@@ -367,9 +407,10 @@
     });
   });
 
-  // Prefill one example for demo
-  window.addEventListener('load', () => {
-    // inputEl.value = '2^10';
-    // solve();
-  });
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', clearHistory);
+  }
+
+  // Initial render of history
+  renderHistory();
 })();
