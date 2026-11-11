@@ -295,20 +295,53 @@
 .theme-selector.open .theme-trigger-caret { transform: rotate(180deg); }
 
 .theme-menu {
-  position: absolute; top: calc(100% + 0.5rem); right: 0;
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
   width: 320px;
-  max-width: calc(100vw - 2rem);
-  padding: 0.6rem; border-radius: 14px;
-  opacity: 0; visibility: hidden;
+  max-width: calc(100vw - 1.5rem);
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.6rem;
+  border-radius: 14px;
+  opacity: 0;
+  visibility: hidden;
   transform: translateY(-8px) scale(0.97);
   transform-origin: top right;
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
   z-index: 100;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
+
+.theme-menu::-webkit-scrollbar { width: 6px; }
+.theme-menu::-webkit-scrollbar-thumb { border-radius: 100px; background: rgba(150,150,150,0.4); }
 
 .theme-selector.open .theme-menu {
   opacity: 1; visibility: visible;
   transform: translateY(0) scale(1);
+}
+
+/* Flipped state: menu opens upward when not enough space below */
+.theme-selector.drop-up .theme-menu {
+  top: auto;
+  bottom: calc(100% + 0.5rem);
+  transform-origin: bottom right;
+  transform: translateY(8px) scale(0.97);
+}
+.theme-selector.drop-up.open .theme-menu {
+  transform: translateY(0) scale(1);
+}
+
+/* Aligned left state: menu anchored to left edge when right would overflow */
+.theme-selector.align-left .theme-menu {
+  right: auto;
+  left: 0;
+  transform-origin: top left;
+}
+.theme-selector.align-left.drop-up .theme-menu {
+  transform-origin: bottom left;
 }
 
 .theme-menu-header {
@@ -734,7 +767,6 @@ body[data-theme="stylish-black"] .theme-check { color: #818cf8; }
   .brand-text h1 { font-size: 1.25rem; }
   .brand-mark { width: 42px; height: 42px; font-size: 1.3rem; border-radius: 12px; }
   .subhead { font-size: 0.78rem; }
-  .theme-menu { width: 300px; }
 }
 
 /* ============================================================
@@ -777,7 +809,10 @@ body[data-theme="stylish-black"] .theme-check { color: #818cf8; }
   .theme-trigger-caret { display: none; }
   .theme-trigger-icon { font-size: 1.1rem; }
 
-  .theme-menu {
+  /* On mobile, the menu becomes a bottom sheet triggered by JS */
+  .theme-selector .theme-menu,
+  .theme-selector.drop-up .theme-menu,
+  .theme-selector.align-left .theme-menu {
     position: fixed;
     top: auto;
     bottom: 0;
@@ -785,15 +820,15 @@ body[data-theme="stylish-black"] .theme-check { color: #818cf8; }
     right: 0;
     width: 100%;
     max-width: 100%;
+    max-height: 80vh;
     border-radius: 20px 20px 0 0;
     padding: 0.75rem 0.75rem 1.5rem;
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
     transform: translateY(100%);
     transform-origin: bottom center;
-    max-height: 80vh;
-    overflow-y: auto;
   }
-  .theme-selector.open .theme-menu {
+  .theme-selector.open .theme-menu,
+  .theme-selector.drop-up.open .theme-menu {
     transform: translateY(0);
   }
   .theme-option-desc { display: none; }
