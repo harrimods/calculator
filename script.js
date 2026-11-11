@@ -41,69 +41,69 @@
   }
 
   /* ---------- SMART MENU POSITIONING ---------- */
+  function clearMenuPosition() {
+    themeMenu.style.left = '';
+    themeMenu.style.top = '';
+    themeMenu.style.right = '';
+    themeMenu.style.bottom = '';
+    themeMenu.style.width = '';
+    themeMenu.style.maxHeight = '';
+  }
+
   function positionMenu() {
-    // On mobile / small screens, CSS handles it as a bottom sheet — skip
+    // Small screens: let CSS bottom-sheet rule take over
     if (window.innerWidth <= 580) {
-      themeSelector.classList.remove('drop-up', 'align-left');
+      clearMenuPosition();
+      themeSelector.classList.remove('drop-up');
       return;
     }
 
-    themeSelector.classList.remove('drop-up', 'align-left');
-
     const triggerRect = themeTrigger.getBoundingClientRect();
-    const viewportH = window.innerHeight;
-    const viewportW = window.innerWidth;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
     const gap = 8;
     const edgePad = 12;
 
-    // Desired menu width (320) and max-height (70vh capped at 520)
-    const menuWidth = Math.min(320, viewportW - edgePad * 2);
-    const menuMaxHeight = Math.min(viewportH * 0.7, 520);
+    const desiredWidth = 320;
+    const maxWidth = vw - edgePad * 2;
+    const menuWidth = Math.min(desiredWidth, maxWidth);
 
-    // --- Vertical: how much room below vs above? ---
-    const spaceBelow = viewportH - triggerRect.bottom - gap - edgePad;
+    // Horizontal: align menu's right edge to trigger's right edge, then clamp inside viewport
+    let left = triggerRect.right - menuWidth;
+    if (left < edgePad) left = edgePad;
+    if (left + menuWidth > vw - edgePad) left = vw - edgePad - menuWidth;
+    if (left < edgePad) left = edgePad;
+
+    // Vertical: pick side with more room and cap height to available space
+    const spaceBelow = vh - triggerRect.bottom - gap - edgePad;
     const spaceAbove = triggerRect.top - gap - edgePad;
+    const menuMaxHeight = Math.min(vh * 0.7, 520);
 
-    const fitsBelow = spaceBelow >= menuMaxHeight;
-    const fitsAbove = spaceAbove >= menuMaxHeight;
+    let openUpward = false;
+    if (spaceBelow < menuMaxHeight && spaceAbove > spaceBelow) {
+      openUpward = true;
+    }
 
-    if (!fitsBelow && fitsAbove) {
+    themeMenu.style.left = Math.round(left) + 'px';
+    themeMenu.style.right = 'auto';
+    themeMenu.style.width = Math.round(menuWidth) + 'px';
+
+    if (openUpward) {
       themeSelector.classList.add('drop-up');
-    } else if (!fitsBelow && !fitsAbove) {
-      // Neither side has full room — pick the side with more space
-      if (spaceAbove > spaceBelow) themeSelector.classList.add('drop-up');
+      themeMenu.style.top = 'auto';
+      themeMenu.style.bottom = Math.round(vh - triggerRect.top + gap) + 'px';
+      themeMenu.style.maxHeight = Math.max(160, Math.min(spaceAbove, menuMaxHeight)) + 'px';
+    } else {
+      themeSelector.classList.remove('drop-up');
+      themeMenu.style.top = Math.round(triggerRect.bottom + gap) + 'px';
+      themeMenu.style.bottom = 'auto';
+      themeMenu.style.maxHeight = Math.max(160, Math.min(spaceBelow, menuMaxHeight)) + 'px';
     }
-
-    // --- Horizontal: does it fit anchored right? ---
-    // Default CSS anchors menu to right: 0 of the trigger.
-    // Menu right edge would be at triggerRect.right.
-    // Menu left edge would be at triggerRect.right - menuWidth.
-    const wouldOverflowLeft = (triggerRect.right - menuWidth) < edgePad;
-    if (wouldOverflowLeft) {
-      // Flip to anchor left of the trigger instead
-      themeSelector.classList.add('align-left');
-    }
-  }
-
-  // Recalculate max-height dynamically when menu is open
-  function adjustMenuHeight() {
-    if (window.innerWidth <= 580) return;
-    const triggerRect = themeTrigger.getBoundingClientRect();
-    const viewportH = window.innerHeight;
-    const edgePad = 12;
-    const isDropUp = themeSelector.classList.contains('drop-up');
-    const available = isDropUp
-      ? triggerRect.top - 8 - edgePad
-      : viewportH - triggerRect.bottom - 8 - edgePad;
-    const target = Math.max(160, Math.min(available, viewportH * 0.7, 520));
-    themeMenu.style.maxHeight = target + 'px';
   }
 
   function openThemeMenu() {
-    // Reset any inline max-height so measurement is accurate
-    themeMenu.style.maxHeight = '';
+    clearMenuPosition();
     positionMenu();
-    adjustMenuHeight();
     themeSelector.classList.add('open');
     themeTrigger.setAttribute('aria-expanded', 'true');
   }
@@ -126,32 +126,24 @@
     });
   });
   document.addEventListener('click', (e) => {
-    if (!themeSelector.contains(e.target)) closeThemeMenu();
+    if (!themeSelector.contains(e.target) && !themeMenu.contains(e.target)) {
+      closeThemeMenu();
+    }
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeThemeMenu();
   });
 
-  // Reposition on resize / scroll / orientation change while open
+  // Reposition when layout changes while menu is open
   window.addEventListener('resize', () => {
-    if (themeSelector.classList.contains('open')) {
-      positionMenu();
-      adjustMenuHeight();
-    }
+    if (themeSelector.classList.contains('open')) positionMenu();
   });
   window.addEventListener('scroll', () => {
-    if (themeSelector.classList.contains('open')) {
-      positionMenu();
-      adjustMenuHeight();
-    }
+    if (themeSelector.classList.contains('open')) positionMenu();
   }, true);
   window.addEventListener('orientationchange', () => {
     if (themeSelector.classList.contains('open')) {
-      // Give the browser a tick to update viewport
-      setTimeout(() => {
-        positionMenu();
-        adjustMenuHeight();
-      }, 120);
+      setTimeout(() => positionMenu(), 150);
     }
   });
 
